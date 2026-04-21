@@ -3,8 +3,8 @@
  * Plugin Name: SEO Engine Pro
  * Plugin URI: https://descomplicandoreceitas.com.br
  * Description: Motor de SEO nativo de alta performance focado em Compliance GEO, Schema dinâmico e Sitemaps inteligentes.
- * Version: 2.0.0
- * Author: Juca Soza Bonini
+ * Version: 2.1.0
+ * Author: Juca Souza Bonini
  * License: GPL2
  */
 
