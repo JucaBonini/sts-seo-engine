@@ -61,8 +61,17 @@ class MetaBox
 
                         <div class="field-group">
                             <label>Meta Descrição</label>
-                            <textarea id="sts_seo_desc_input" name="sts_seo_desc" rows="3" placeholder="Resumo para o Google..."><?php echo esc_textarea($seo_desc); ?></textarea>
-                            <div class="char-count"><span id="desc-count">0</span> / 160</div>
+                            <textarea id="sts_seo_desc_input" name="sts_seo_desc" rows="3" placeholder="Resumo para o Google (ideal: 120-155 chars com keyword + CTA)..."><?php echo esc_textarea($seo_desc); ?></textarea>
+                            <div class="char-count" style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+                                <span id="desc-count" style="font-weight:700;">0</span>
+                                <span style="color:#999">/</span>
+                                <span style="color:#646970">155 chars</span>
+                                <div style="flex:1;height:4px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                                    <div id="desc-fill" style="height:100%;width:0%;border-radius:4px;transition:width .2s,background .2s;"></div>
+                                </div>
+                                <span id="desc-icon">⚪</span>
+                            </div>
+                            <div id="desc-tip" style="display:none;font-size:11px;margin-top:4px;padding:5px 10px;border-radius:5px;font-weight:600;"></div>
                         </div>
 
                         <div class="field-group" style="margin-top: 10px; padding: 10px; background: #fff5f5; border-radius: 6px; border: 1px solid #fed7d7;">
@@ -154,17 +163,48 @@ class MetaBox
                     const elTitleCnt = container.querySelector('#title-count');
                     if (elTitleCnt) elTitleCnt.textContent = tLen;
 
-                    // 2. Desc Length (70-160 is green)
+                    // 2. Desc Length (120-155 is green, >155 = Google ignora)
                     const dLen = desc.length;
                     let descStatus = 'fail';
-                    if (dLen >= 70 && dLen <= 160) { descStatus = 'pass'; score += 20; }
-                    else if (dLen > 0) { descStatus = 'warn'; score += 5; }
-                    
+                    if (dLen >= 120 && dLen <= 155) { descStatus = 'pass'; score += 20; }
+                    else if (dLen > 0 && dLen < 120) { descStatus = 'warn'; score += 10; }
+                    else if (dLen > 155) { descStatus = 'fail'; }
+
                     const elDescCheck = container.querySelector('#check-desc-len');
                     if (elDescCheck) elDescCheck.className = descStatus;
 
                     const elDescCnt = container.querySelector('#desc-count');
-                    if (elDescCnt) elDescCnt.textContent = dLen;
+                    if (elDescCnt) {
+                        elDescCnt.textContent = dLen;
+                        // Barra de progresso colorida
+                        const fill = container.querySelector('#desc-fill');
+                        const icon = container.querySelector('#desc-icon');
+                        const tip  = container.querySelector('#desc-tip');
+                        const pct  = Math.min((dLen / 155) * 100, 100);
+                        if (fill) fill.style.width = pct + '%';
+
+                        if (dLen === 0) {
+                            if (fill) fill.style.background = '#e2e8f0';
+                            if (icon) icon.textContent = '⚠️';
+                            elDescCnt.style.color = '#f59e0b';
+                            if (tip) { tip.style.display='block'; tip.style.background='#fef3c7'; tip.style.color='#92400e'; tip.textContent='⚠️ Campo vazio — o Google vai criar o snippet sozinho, sem keyword nem CTA.'; }
+                        } else if (dLen <= 120) {
+                            if (fill) fill.style.background = '#f59e0b';
+                            if (icon) icon.textContent = '🟡';
+                            elDescCnt.style.color = '#b45309';
+                            if (tip) { tip.style.display='block'; tip.style.background='#fffbeb'; tip.style.color='#78350f'; tip.textContent='🟡 Curto demais. Ideal: 120–155 chars com keyword e CTA.'; }
+                        } else if (dLen <= 155) {
+                            if (fill) fill.style.background = '#22c55e';
+                            if (icon) icon.textContent = '✅';
+                            elDescCnt.style.color = '#16a34a';
+                            if (tip) tip.style.display = 'none';
+                        } else {
+                            if (fill) fill.style.background = '#ef4444';
+                            if (icon) icon.textContent = '🔴';
+                            elDescCnt.style.color = '#dc2626';
+                            if (tip) { tip.style.display='block'; tip.style.background='#fee2e2'; tip.style.color='#991b1b'; tip.textContent='🔴 ' + dLen + ' chars — passou de 155! O Google vai IGNORAR esta descrição.'; }
+                        }
+                    }
 
                     // 3. Keyword in Title
                     const passKWTitle = kw && title.toLowerCase().includes(kw);
